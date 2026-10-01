@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Hashing & Evidence Authentication | Next-Gen Forensic Presentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --bg-dark: #070a13;
+      --bg-card: rgba(15, 23, 42, 0.75);
+      --border-card: rgba(255, 255, 255, 0.1);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #38bdf8;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --accent-purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --transition-slide: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Ambient Interactive Canvas */
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Deck Layout */
+    .deck-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3.5rem 6rem;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.94) translateY(30px);
+      transition: var(--transition-slide);
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+    }
+
+    .slide.prev {
+      opacity: 0;
+      transform: scale(0.94) translateY(-30px);
+    }
+
+    /* Typography & Headers */
+    .slide-tag {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .slide-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 900px;
+    }
+
+    /* Cards & Grids */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .slide-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 1.75rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .slide-card:hover {
+      border-color: rgba(0, 242, 254, 0.4);
+      transform: translateY(-4px);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Top Progress Bar */
+    .progress-bar-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 100;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 8.33%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+      transition: width 0.4s ease;
+      box-shadow: 0 0 12px var(--accent-cyan);
+    }
+
+    /* Navigation Controller */
+    .deck-controls {
+      position: fixed;
+      bottom: 2rem;
+      right: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-card);
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .ctrl-btn {
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(0, 242, 254, 0.2);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      padding: 0 0.5rem;
+    }
+
+    /* Top Branding Bar */
+    .deck-header {
+      position: fixed;
+      top: 1.25rem;
+      left: 2.5rem;
+      right: 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      pointer-events: auto;
+    }
+
+    .header-badge {
+      background: rgba(0, 242, 254, 0.12);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--accent-cyan);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .header-right {
+      pointer-events: auto;
+    }
+
+    /* Interactive Elements inside slides */
+    .interactive-box {
+      background: rgba(10, 15, 29, 0.95);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #090d16;
+      border: none;
+      font-weight: 700;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+      transform: scale(1.02);
+    }
+
+    .bit-heatmap {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      gap: 3px;
+      margin-top: 1rem;
+    }
+
+    .bit-dot {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      background: #1e293b;
+      transition: all 0.2s ease;
+    }
+
+    .bit-dot.flipped {
+      background: #ef4444;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+    }
+
+    /* 12-Slide Overview Overlay */
+    .overview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 10, 19, 0.95);
+      backdrop-filter: blur(16px);
+      z-index: 1000;
+      display: none;
+      padding: 3rem;
+      overflow-y: auto;
+    }
+
+    .overview-modal.active {
+      display: block;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      max-width: 1400px;
+      margin: 2rem auto;
+    }
+
+    .overview-card {
+      background: #0e1424;
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .overview-card:hover {
+      border-color: var(--accent-cyan);
+      transform: scale(1.03);
+    }
+
+    .overview-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    .overview-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Keyframe Pulse */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Particle Canvas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="deck-header">
+    <div class="header-left">
+      <span class="header-badge">PBL TAE-I</span>
+      <span><strong>Shourya Choure [CM23049]</strong> • Guide: Ms. Sweta Bokade • SBJITMR Nagpur</span>
+    </div>
+    <div class="header-right">
+      <a href="/" class="ctrl-btn" style="text-decoration: none;">
+        <span>🖥️</span> Open Forensic Suite
+      </a>
+    </div>
+  </header>
+
+  <!-- Slide Deck Container -->
+  <div class="deck-container">
+
+    <!-- ============================================== -->
+    <!-- SLIDE 1: Title Slide -->
+    <!-- ============================================== -->
+    <section class="slide active" data-slide="1">
+      <div class="slide-tag">CYBER FORENSICS & INVESTIGATION • N-PECCM704T</div>
+      <h1 class="slide-title" style="font-size: 3.5rem;">Digital Hashing &<br>Evidence Authentication</h1>
+      <p class="slide-subtitle" style="font-size: 1.4rem;">
+        Mathematical Integrity Verification, Micro-Tamper Detection & Cryptographic Chain-of-Custody
+      </p>
+
+      <div class="grid-3" style="margin-top: 2.5rem; max-width: 1100px;">
+        <div class="slide-card" style="border-left: 3px solid var(--accent-cyan);">
+          <div class="card-icon">👨‍💻</div>
+          <div class="card-title">Investigator</div>
+          <div class="card-desc">
+            <strong>Shourya Choure</strong><br>
+            Roll: CM23049 | VI Sem B. Tech.<br>
+            CSE (Artificial Intelligence & ML)
+          </div>
+        </div>
+
+        <div class="slide-card" style="border-left: 3px solid var(--accent-blue);">
+          <div class="card-icon">👩‍🏫</div>
+          <div class="card-title">Faculty Guide</div>
+          <div class="card-desc">
+            <strong>Ms. Sweta Bokade</strong><br>
+            Assistant Professor & Course Incharge<br>
+            Dept. of Emerging Technologies
+          </div>
+        </div>
+
+        <div class="slide-card" style="border-left: 3px solid var(--accent-emerald);">
+          <div class="card-icon">🏛️</div>
+          <div class="card-title">Institution</div>
+          <div class="card-desc">
+            <strong>SBJITMR, Nagpur</strong><br>
+            An Autonomous Institute affiliated to R.T.M. Nagpur University (2026–27)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 2: Problem Statement -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="2">
+      <div class="slide-tag">THE PROBLEM STATEMENT</div>
+      <h2 class="slide-title">The Digital Evidence Dilemma</h2>
+      <p class="slide-subtitle">
+        Unlike a physical weapon sealed in a evidence locker, digital artifacts (disk images, server logs, mobile dumps) are purely sequences of 0s and 1s that can be copied infinitely without degradation.
+      </p>
+
+      <div class="grid-3">
+        <div class="slide-card">
+          <div class="card-icon">👁️</div>
+          <div class="card-title" style="color: var(--accent-rose);">Invisible Tampering</div>
+          <div class="card-desc">
+            A single altered bit in a 1-TB disk image is completely undetectable to the human eye, yet can completely falsify a murder alibi or corporate audit record.
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <div class="card-icon">⚖️</div>
+          <div class="card-title" style="color: var(--accent-amber);">Court Admissibility</div>
+          <div class="card-desc">
+            Under Section 65B (Indian Evidence Act / BSA 2023) and ISO/IEC 27037, prosecutors must prove beyond reasonable doubt that evidence was untouched from seizure to trial.
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <div class="card-icon">📄</div>
+          <div class="card-title" style="color: var(--accent-cyan);">The Paper Log Failure</div>
+          <div class="card-desc">
+            Over 52% of integrity disputes arise from procedural gaps and mutable documentation. A hash is only as trustworthy as the ledger that records it.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 3: Cryptographic Properties -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="3">
+      <div class="slide-tag">MATHEMATICAL PILLARS</div>
+      <h2 class="slide-title">Core Properties of Cryptographic Hash Functions</h2>
+      
+      <div class="grid-2">
+        <div class="slide-card">
+          <h3 class="card-title" style="color: var(--accent-cyan);">1. Deterministic & Fixed-Length</h3>
+          <p class="card-desc">
+            Regardless of whether the input is a single character or a 500-GB Raw Disk Image (`.dd`), SHA-256 always produces exactly 256 bits (64 hex characters). Same input = same hash, anywhere in the world.
+          </p>
+          <div class="interactive-box" style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.8rem;">
+            <div style="color: var(--text-muted);">input("Evidence.bin") ➔</div>
+            <div style="color: var(--accent-cyan); word-break: break-all;">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3 class="card-title" style="color: var(--accent-emerald);">2. Pre-Image & Collision Resistance</h3>
+          <p class="card-desc">
+            <strong>Pre-Image Resistance (One-Way):</strong> Given a hash <code>h</code>, it is mathematically impossible within cosmic timescales to reconstruct the original file <code>m</code>.<br><br>
+            <strong>Collision Resistance:</strong> Computationally infeasible to craft two distinct files <code>x ≠ y</code> that yield <code>hash(x) == hash(y)</code>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 4: Algorithm Comparative Analysis -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="4">
+      <div class="slide-tag">ALGORITHM TAXONOMY</div>
+      <h2 class="slide-title">Comparative Analysis: From CRC32 to SHA-3</h2>
+
+      <div class="slide-card" style="padding: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--accent-cyan);">
+              <th style="padding: 0.75rem;">Algorithm</th>
+              <th>Digest Size</th>
+              <th>Typical Forensic Role</th>
+              <th>Recommended Practice</th>
+              <th>Risk Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 0.75rem;"><strong>CRC32</strong></td>
+              <td>32-bit</td>
+              <td>Basic transmission check</td>
+              <td><span style="color: var(--accent-rose);">FORBIDDEN for evidence (Non-crypto)</span></td>
+              <td><span style="color: var(--accent-rose); font-weight: bold;">9 / 10</span></td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 0.75rem;"><strong>MD5</strong></td>
+              <td>128-bit</td>
+              <td>Legacy checksums</td>
+              <td>Use ONLY as secondary dual-hash cross-check</td>
+              <td><span style="color: var(--accent-rose); font-weight: bold;">8 / 10</span></td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 0.75rem;"><strong>SHA-1</strong></td>
+              <td>160-bit</td>
+              <td>Default in older tools</td>
+              <td>Phasing out; avoid as sole evidence hash (SHAttered)</td>
+              <td><span style="color: var(--accent-amber); font-weight: bold;">7 / 10</span></td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 0.75rem;"><strong>SHA-256</strong></td>
+              <td>256-bit</td>
+              <td>Standard acquisition</td>
+              <td><span style="color: var(--accent-emerald);">MANDATORY Gold Standard for digital evidence</span></td>
+              <td><span style="color: var(--accent-emerald); font-weight: bold;">3 / 10</span></td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 0.75rem;"><strong>SHA-512</strong></td>
+              <td>512-bit</td>
+              <td>High-assurance cases</td>
+              <td>High-value, long-term retention evidentiary archives</td>
+              <td><span style="color: var(--accent-blue); font-weight: bold;">2 / 10</span></td>
+            </tr>
+            <tr>
+              <td style="padding: 0.75rem;"><strong>SHA-3 (Keccak)</strong></td>
+              <td>256-bit</td>
+              <td>Next-gen standard</td>
+              <td>Sponge construction; immune to Merkle-Damgård leaks</td>
+              <td><span style="color: var(--accent-purple); font-weight: bold;">1 / 10</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 5: The Avalanche Effect Demo -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="5">
+      <div class="slide-tag">INTERACTIVE DEMONSTRATION</div>
+      <h2 class="slide-title">The Avalanche Effect: 1-Bit Micro-Tamper Detection</h2>
+
+      <div class="grid-2">
+        <div class="slide-card">
+          <h3 class="card-title">Mathematical Principle</h3>
+          <p class="card-desc">
+            "Altering even a single bit of the input produces a completely different digest, a property known as the avalanche effect. This makes a hash value an efficient stand-in for an entire evidence file." (Report Page 3)
+          </p>
+
+          <div style="margin-top: 1.5rem;">
+            <button class="btn-action" id="slide-btn-flip-bit">⚡ Flip 1 Single Bit in Evidence</button>
+            <button class="ctrl-btn" id="slide-btn-reset-bit" style="margin-left: 0.5rem; display: inline-flex;">Reset</button>
+          </div>
+
+          <div class="interactive-box" style="margin-top: 1rem;">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Current Evidence Payload:</div>
+            <div id="slide-evidence-text" style="font-family: var(--font-mono); font-size: 0.9rem; color: #fff; margin-top: 0.35rem;">
+              AMOUNT APPROVED: INR 1,500,000 [VERIFIED]
+            </div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-top: 0.5rem;" id="slide-evidence-hash">
+              SHA-256: 4f128bc9910a...
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3 class="card-title" style="display: flex; justify-content: space-between;">
+            <span>256-Bit Cryptographic Diffusion</span>
+            <span id="slide-avalanche-pct" style="color: var(--accent-rose); font-family: var(--font-mono);">0.0% Flipped</span>
+          </h3>
+          <p class="card-desc">
+            Red cells represent bits inverted due to the single-bit change:
+          </p>
+
+          <div class="bit-heatmap" id="slide-bit-heatmap">
+            <!-- 256 bits -->
+          </div>
+          
+          <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+            Hamming Distance: <strong id="slide-hamming-val" style="color: #fff;">0</strong> / 256 bits flipped (~50% indicates perfect cryptographic diffusion).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 6: Dual Hashing Strategy -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="6">
+      <div class="slide-tag">FORENSIC SAFEGUARD</div>
+      <h2 class="slide-title">Dual-Hashing: Bridging Legacy & Modern Law</h2>
+
+      <div class="grid-2">
+        <div class="slide-card">
+          <div class="card-icon">🛡️</div>
+          <h3 class="card-title">Why Dual-Hashing is Mandatory</h3>
+          <p class="card-desc">
+            Law enforcement agencies possess millions of legacy case records hashed in MD5. Transitioning entirely to SHA-256 overnight breaks historical case matching.<br><br>
+            <strong>The Dual-Hash Protocol:</strong> Every evidence item is hashed in BOTH <code>MD5</code> and <code>SHA-256</code> upon seizure.
+          </p>
+        </div>
+
+        <div class="slide-card">
+          <div class="card-icon">🔒</div>
+          <h3 class="card-title">Mathematical Impossibility of Dual Collision</h3>
+          <p class="card-desc">
+            While MD5 collisions can theoretically be generated under artificial constraints (Wang et al. attack), crafting a fraudulent file that matches <strong>BOTH an MD5 digest AND a SHA-256 digest simultaneously</strong> is mathematically impossible with all the computing power on Earth.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 7: Tamper-Evident Chain-of-Custody -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="7">
+      <div class="slide-tag">BLOCKCHAIN-GRADE LEDGER</div>
+      <h2 class="slide-title">Tamper-Evident Chain-of-Custody (CoC)</h2>
+      <p class="slide-subtitle">
+        "A hash value is only as trustworthy as the record that stores it; an unsecured hash log can itself become a point of tampering." (Report Page 7)
+      </p>
+
+      <div class="grid-3" style="margin-top: 1.5rem;">
+        <div class="slide-card" style="border-top: 3px solid var(--accent-cyan);">
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-cyan);">BLOCK #1 • SEIZURE</div>
+          <h4 style="margin: 0.4rem 0;">Crime Scene Acquisition</h4>
+          <p class="card-desc">
+            Handler: Shourya Choure<br>
+            Write-Blocker: Active<br>
+            <code>PrevHash: 00000000...</code>
+          </p>
+        </div>
+
+        <div class="slide-card" style="border-top: 3px solid var(--accent-blue);">
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-blue);">BLOCK #2 • STORAGE</div>
+          <h4 style="margin: 0.4rem 0;">Evidence Locker Transfer</h4>
+          <p class="card-desc">
+            Handler: Officer Verma<br>
+            Location: Faraday Vault B-14<br>
+            <code>PrevHash: SHA(Block #1)</code>
+          </p>
+        </div>
+
+        <div class="slide-card" style="border-top: 3px solid var(--accent-emerald);">
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-emerald);">BLOCK #3 • LAB IMAGING</div>
+          <h4 style="margin: 0.4rem 0;">Bit-Stream Extraction</h4>
+          <p class="card-desc">
+            Handler: Ms. Sweta Bokade<br>
+            Image: Raw .dd verified identical<br>
+            <code>PrevHash: SHA(Block #2)</code>
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <span class="header-badge" style="font-size: 0.9rem; padding: 6px 16px;">
+          ✓ Any modification to a past block's handler, timestamp, or hash breaks all subsequent hashes in the chain.
+        </span>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 8: Forensic Integrity Risks (Table 2) -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="8">
+      <div class="slide-tag">RISK TAXONOMY (TABLE 2)</div>
+      <h2 class="slide-title">Key Integrity Risks in Digital Evidence Handling</h2>
+
+      <div class="grid-2">
+        <div class="slide-card">
+          <h4 class="card-title" style="color: var(--accent-rose);">1. Undetected Evidence Tampering</h4>
+          <p class="card-desc">
+            Modification during transit or storage undermines forensic analysis.<br>
+            <span style="color: var(--accent-cyan);">Mitigation: Mandatory bit-for-bit SHA-256 re-verification at every transfer.</span>
+          </p>
+        </div>
+
+        <div class="slide-card">
+          <h4 class="card-title" style="color: var(--accent-amber);">2. Hash Collision Exploitation</h4>
+          <p class="card-desc">
+            Defense fabricating matching MD5/SHA-1 files to contest authenticity.<br>
+            <span style="color: var(--accent-cyan);">Mitigation: Enforce dual-hashing and mandate SHA-256 as legal standard.</span>
+          </p>
+        </div>
+
+        <div class="slide-card">
+          <h4 class="card-title" style="color: var(--accent-rose);">3. Chain-of-Custody Documentation Gaps</h4>
+          <p class="card-desc">
+            Missing custodial signatures destroy the provable history of custody.<br>
+            <span style="color: var(--accent-cyan);">Mitigation: Cryptographically chained immutable ledger.</span>
+          </p>
+        </div>
+
+        <div class="slide-card">
+          <h4 class="card-title" style="color: var(--accent-amber);">4. Write-Blocker Omission</h4>
+          <p class="card-desc">
+            Mounting a drive in an OS updates filesystem access timestamps (`atime`).<br>
+            <span style="color: var(--accent-cyan);">Mitigation: Certified hardware write-blockers (Tableau T8u).</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 9: Statistical Findings (Figures 2 & 3) -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="9">
+      <div class="slide-tag">EMPIRICAL DATA (REPORT FIGURES 2 & 3)</div>
+      <h2 class="slide-title">Statistical Findings & Incident Distribution</h2>
+
+      <div class="grid-2">
+        <div class="slide-card">
+          <h3 class="card-title" style="color: var(--accent-cyan);">Figure 2: Integrity-Failure Risk (1–10 Scale)</h3>
+          <p class="card-desc" style="margin-bottom: 1rem;">
+            Relative scale derived from algorithm collision vulnerability:
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8;">
+            <div>CRC32:   <span style="color: var(--accent-rose);">█████████░ 9 / 10 (Critical)</span></div>
+            <div>MD5:     <span style="color: var(--accent-rose);">████████░░ 8 / 10 (Severe)</span></div>
+            <div>SHA-1:   <span style="color: var(--accent-amber);">███████░░░ 7 / 10 (High)</span></div>
+            <div>SHA-256: <span style="color: var(--accent-emerald);">███░░░░░░░ 3 / 10 (Robust)</span></div>
+            <div>SHA-512: <span style="color: var(--accent-blue);">██░░░░░░░░ 2 / 10 (Maximum)</span></div>
+            <div>SHA-3:   <span style="color: var(--accent-purple);">█░░░░░░░░░ 1 / 10 (Next-Gen)</span></div>
+          </div>
+        </div>
+
+        <div class="slide-card">
+          <h3 class="card-title" style="color: var(--accent-blue);">Figure 3: Distribution of Integrity Incidents</h3>
+          <p class="card-desc" style="margin-bottom: 1rem;">
+            Primary root causes behind compromised digital evidence:
+          </p>
+          <div style="font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8;">
+            <div>• Legacy / Weak Algorithm Use:           <strong>28%</strong></div>
+            <div>• Chain-of-Custody Documentation Gaps:   <strong>24%</strong></div>
+            <div>• Evidence Mishandling (Transit/Storage): <strong>20%</strong></div>
+            <div>• Tool Misconfiguration:                 <strong>16%</strong></div>
+            <div>• Verification Skipped Under Pressure:   <strong>12%</strong></div>
+          </div>
+          <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--accent-cyan);">
+            ➜ Over 52% of integrity challenges are procedural, not technical.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 10: Legal Admissibility (Sec 65B) -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="10">
+      <div class="slide-tag">LEGAL FRAMEWORK</div>
+      <h2 class="slide-title">Section 65B & Statutory Admissibility</h2>
+
+      <div class="grid-3">
+        <div class="slide-card">
+          <div class="card-icon">⚖️</div>
+          <h3 class="card-title">Section 65B (IEA / BSA 2023)</h3>
+          <p class="card-desc">
+            Mandates a formal certificate affirming device integrity, unbroken chain-of-custody, and cryptographic proof that no unauthorized modification occurred while in official custody.
+          </p>
+        </div>
+
+        <div class="slide-card">
+          <div class="card-icon">🌐</div>
+          <h3 class="card-title">ISO/IEC 27037 Standard</h3>
+          <p class="card-desc">
+            International guidelines for Digital Evidence Identification, Collection, Acquisition, and Preservation. Requires bit-stream verification before extraction.
+          </p>
+        </div>
+
+        <div class="slide-card">
+          <div class="card-icon">🏛️</div>
+          <h3 class="card-title">US FRE Rule 902(13)/(14)</h3>
+          <p class="card-desc">
+            Allows self-authenticating digital evidence through certified cryptographic hash verification matching across custodial transfer timestamps.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 11: Operational Recommendations -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="11">
+      <div class="slide-tag">BEST PRACTICES</div>
+      <h2 class="slide-title">Operational Recommendations for Forensic Practice</h2>
+
+      <div class="grid-2">
+        <div class="slide-card">
+          <h4 class="card-title" style="color: var(--accent-emerald);">Technical Mandates</h4>
+          <ul style="padding-left: 1.25rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.8;">
+            <li>Adopt <strong>SHA-256</strong> as the primary legal standard for all new evidence.</li>
+            <li>Enforce <strong>Dual-Hashing (MD5 + SHA-256)</strong> to maintain legacy continuity.</li>
+            <li>Mandate <strong>certified hardware write-blockers</strong> during all acquisitions.</li>
+          </ul>
+        </div>
+
+        <div class="slide-card">
+          <h4 class="card-title" style="color: var(--accent-cyan);">Procedural Safeguards</h4>
+          <ul style="padding-left: 1.25rem; font-size: 0.95rem; color: var(--text-muted); line-height: 1.8;">
+            <li>Replace paper logs with <strong>tamper-evident hash-chained ledgers</strong>.</li>
+            <li>Re-verify hashes at every stage: Seizure ➔ Vault ➔ Image ➔ Analysis ➔ Court.</li>
+            <li>Conduct regular algorithm literacy and write-blocking training for field officers.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 12: Conclusion & Demonstration -->
+    <!-- ============================================== -->
+    <section class="slide" data-slide="12">
+      <div class="slide-tag">CONCLUSION & SYSTEM OVERVIEW</div>
+      <h2 class="slide-title">ForensiGuard: The Working System</h2>
+      <p class="slide-subtitle">
+        The research study was translated into a functional, production-ready cyber forensics suite:
+      </p>
+
+      <div class="slide-card" style="margin-top: 1.5rem; border: 2px solid var(--accent-cyan);">
+        <div class="grid-2">
+          <div>
+            <h3 class="card-title" style="color: var(--accent-cyan);">Working Software Modules:</h3>
+            <ul style="padding-left: 1.25rem; font-size: 0.95rem; color: #cbd5e1; line-height: 1.8;">
+              <li>✓ Multi-Algorithm Hashing Engine (SHA-256, MD5, SHA-512, SHA-3, CRC32)</li>
+              <li>✓ Real-Time 256-Bit Avalanche Effect & Tamper Simulation Lab</li>
+              <li>✓ Cryptographic Chain-of-Custody with Automated Breach Detection</li>
+              <li>✓ Statutory Section 65B Certificate Generation & PDF Export</li>
+            </ul>
+          </div>
+          <div style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1.5rem;">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">INVESTIGATOR</div>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #fff;">Shourya Choure [CM23049]</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">COURSE INCHARGE / GUIDE</div>
+            <div style="font-size: 1rem; color: var(--accent-cyan);">Ms. Sweta Bokade (Assistant Professor)</div>
+            <div style="margin-top: 1.25rem;">
+              <a href="/" class="btn-action" style="text-decoration: none; display: inline-block;">
+                🚀 Open Live Working Suite
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Floating Navigation Controls -->
+  <div class="deck-controls">
+    <button class="ctrl-btn" id="btn-prev" title="Previous Slide (Left Arrow)">◀</button>
+    <span class="slide-counter" id="slide-counter">01 / 12</span>
+    <button class="ctrl-btn" id="btn-next" title="Next Slide (Right Arrow or Space)">▶</button>
+    <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2);"></div>
+    <button class="ctrl-btn" id="btn-overview" title="Toggle 12-Slide Overview (O)">⊞ Grid</button>
+    <button class="ctrl-btn" id="btn-sound" title="Toggle Cyber Audio (M)">🔊 SFX</button>
+    <button class="ctrl-btn" id="btn-fullscreen" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
+    <a href="/Digital_Hashing_and_Evidence_Authentication.pptx" download class="ctrl-btn" title="Download PPTX File">
+      💾 Download .PPTX
+    </a>
+  </div>
+
+  <!-- 12-Slide Overview Modal -->
+  <div class="overview-modal" id="overview-modal">
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto;">
+      <h2 style="font-size: 1.75rem; color: #fff;">Slide Deck Overview (12 Slides)</h2>
+      <button class="ctrl-btn" id="btn-close-overview">✕ Close (Esc)</button>
+    </div>
+    <div class="overview-grid" id="overview-grid">
+      <!-- 12 cards populated by JS -->
+    </div>
+  </div>
+
+  <script type="module">
+    import CryptoJS from 'crypto-js';
+
+    let currentSlide = 1;
+    const totalSlides = 12;
+    let audioEnabled = true;
+
+    // Web Audio Synthesizer for Cyber Sound Effects
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playCyberSound(type = 'click') {
+      if (!audioEnabled || !audioCtx) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'flip') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.linearRampToValueAtTime(0.001, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+      } catch (e) {}
+    }
+
+    function goToSlide(n) {
+      if (n < 1 || n > totalSlides) return;
+      playCyberSound('click');
+      const slides = document.querySelectorAll('.slide');
+      slides.forEach(s => {
+        const num = parseInt(s.getAttribute('data-slide'));
+        s.classList.remove('active', 'prev');
+        if (num === n) {
+          s.classList.add('active');
+        } else if (num < n) {
+          s.classList.add('prev');
+        }
+      });
+      currentSlide = n;
+      document.getElementById('slide-counter').textContent = `${String(n).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+      document.getElementById('progress-bar').style.width = `${(n / totalSlides) * 100}%`;
+    }
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        goToSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        goToSlide(currentSlide - 1);
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'o') {
+        toggleOverview();
+      } else if (e.key.toLowerCase() === 'm') {
+        toggleAudio();
+      } else if (e.key === 'Escape') {
+        document.getElementById('overview-modal').classList.remove('active');
+      }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => goToSlide(currentSlide + 1));
+    document.getElementById('btn-prev').addEventListener('click', () => goToSlide(currentSlide - 1));
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('btn-sound').textContent = audioEnabled ? '🔊 SFX' : '🔇 Muted';
+    }
+    document.getElementById('btn-sound').addEventListener('click', toggleAudio);
+
+    // Overview Grid
+    const slideTitles = [
+      "1. Title & Investigator Details",
+      "2. The Evidence Dilemma",
+      "3. Mathematical Properties",
+      "4. Algorithm Comparison Table",
+      "5. The Avalanche Effect Demo",
+      "6. Dual-Hashing Strategy",
+      "7. Chain-of-Custody Ledger",
+      "8. Forensic Integrity Risks",
+      "9. Statistical Findings",
+      "10. Section 65B Legal Admissibility",
+      "11. Operational Recommendations",
+      "12. Conclusion & Live Demo"
+    ];
+
+    const gridContainer = document.getElementById('overview-grid');
+    slideTitles.forEach((t, i) => {
+      const card = document.createElement('div');
+      card.className = 'overview-card';
+      card.innerHTML = `
+        <span class="overview-num">SLIDE ${String(i+1).padStart(2, '0')}</span>
+        <div class="overview-name">${t}</div>
+        <div style="font-size: 0.75rem; color: #64748b;">Click to jump</div>
+      `;
+      card.addEventListener('click', () => {
+        goToSlide(i + 1);
+        document.getElementById('overview-modal').classList.remove('active');
+      });
+      gridContainer.appendChild(card);
+    });
+
+    function toggleOverview() {
+      document.getElementById('overview-modal').classList.toggle('active');
+    }
+    document.getElementById('btn-overview').addEventListener('click', toggleOverview);
+    document.getElementById('btn-close-overview').addEventListener('click', toggleOverview);
+
+    // Slide 5 Interactive Avalanche Simulation
+    const originalText = "AMOUNT APPROVED: INR 1,500,000 [VERIFIED]";
+    const tamperedText = "AMOUNT APPROVED: INR 2,500,000 [VERIFIED]";
+    const heatmap = document.getElementById('slide-bit-heatmap');
+
+    function hexToBin(hex) {
+      let bin = '';
+      for (let i = 0; i < hex.length; i++) {
+        bin += parseInt(hex[i], 16).toString(2).padStart(4, '0');
+      }
+      return bin;
+    }
+
+    function initHeatmap() {
+      heatmap.innerHTML = '';
+      for (let i = 0; i < 256; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'bit-dot';
+        dot.id = `bit-dot-${i}`;
+        heatmap.appendChild(dot);
+      }
+    }
+    initHeatmap();
+
+    function updateSlideAvalanche(isTampered = false) {
+      const text = isTampered ? tamperedText : originalText;
+      const hash = CryptoJS.SHA256(text).toString();
+      const origHash = CryptoJS.SHA256(originalText).toString();
+
+      document.getElementById('slide-evidence-text').textContent = text;
+      document.getElementById('slide-evidence-hash').textContent = `SHA-256: ${hash}`;
+
+      const binCurr = hexToBin(hash);
+      const binOrig = hexToBin(origHash);
+
+      let flipped = 0;
+      for (let i = 0; i < 256; i++) {
+        const dot = document.getElementById(`bit-dot-${i}`);
+        if (dot) {
+          const isFlipped = binCurr[i] !== binOrig[i];
+          if (isFlipped) flipped++;
+          dot.className = `bit-dot ${isFlipped ? 'flipped' : ''}`;
+        }
+      }
+
+      const pct = ((flipped / 256) * 100).toFixed(1);
+      document.getElementById('slide-hamming-val').textContent = flipped;
+      document.getElementById('slide-avalanche-pct').textContent = `${pct}% Flipped`;
+    }
+
+    document.getElementById('slide-btn-flip-bit').addEventListener('click', () => {
+      playCyberSound('flip');
+      updateSlideAvalanche(true);
+    });
+
+    document.getElementById('slide-btn-reset-bit').addEventListener('click', () => {
+      playCyberSound('click');
+      updateSlideAvalanche(false);
+    });
+
+    updateSlideAvalanche(false);
+
+    // Particle Background Effect
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = Array.from({ length: 45 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      radius: Math.random() * 2 + 1,
+      color: Math.random() > 0.5 ? 'rgba(0, 242, 254, ' : 'rgba(56, 189, 248, '
+    }));
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + '0.35)';
+        ctx.fill();
+
+        for (let j = idx + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(0, 242, 254, ${0.12 * (1 - dist / 120)})`;
+            ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  </script>
+</body>
+</html>
