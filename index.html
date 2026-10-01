@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForensiGuard | Digital Evidence Integrity & Cryptographic Chain-of-Custody Suite</title>
+  <link rel="stylesheet" href="/styles/index.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/></svg>">
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-icon-shield">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <h1>
+            ForensiGuard <span class="badge-tag">PBL TAE-I SYSTEM</span>
+          </h1>
+          <p class="brand-subtitle">Digital Evidence Cryptographic Integrity & Chain-of-Custody Suite</p>
+        </div>
+      </div>
+
+      <div class="academic-info">
+        <div class="academic-chip">
+          <span class="chip-label">Investigator</span>
+          <span class="chip-val chip-highlight">Shourya Choure [CM23049]</span>
+        </div>
+        <div class="academic-chip">
+          <span class="chip-label">Guide</span>
+          <span class="chip-val">Ms. Sweta Bokade (Asst. Prof)</span>
+        </div>
+        <div class="academic-chip">
+          <span class="chip-label">Course / Dept</span>
+          <span class="chip-val">N-PECCM704T • CSE (AI&ML)</span>
+        </div>
+        <div class="academic-chip">
+          <span class="chip-label">Institution</span>
+          <span class="chip-val">SBJITMR, Nagpur (2026-27)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="nav-tabs-wrapper">
+    <div class="nav-tabs" id="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-ingestion">
+        <span class="tab-icon">📂</span> Evidence Ingestion & Hashes
+      </button>
+      <button class="tab-btn" data-tab="tab-avalanche">
+        <span class="tab-icon">⚡</span> Avalanche Effect & Tamper Lab
+      </button>
+      <button class="tab-btn" data-tab="tab-coc">
+        <span class="tab-icon">⛓️</span> Chain of Custody Ledger
+      </button>
+      <button class="tab-btn" data-tab="tab-verify">
+        <span class="tab-icon">🛡️</span> Verification Station
+      </button>
+      <button class="tab-btn" data-tab="tab-analytics">
+        <span class="tab-icon">📊</span> Risk & Incident Analytics
+      </button>
+      <button class="tab-btn" data-tab="tab-certificate">
+        <span class="tab-icon">📄</span> Forensic Certificate (Sec 65B)
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: Evidence Ingestion & Multi-Hash Lab -->
+    <!-- ========================================== -->
+    <section class="tab-pane active" id="tab-ingestion">
+      <div class="grid-2">
+        <!-- Ingestion Column -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">
+                <span>📥</span> Digital Artifact Ingestion
+              </h2>
+              <p class="card-subtitle">Load digital evidence, memory dump, disk slice, or log artifact</p>
+            </div>
+            <span class="status-pill info">ISO/IEC 27037 COMPLIANT</span>
+          </div>
+
+          <!-- Drag and Drop Box -->
+          <div class="dropzone" id="evidence-dropzone">
+            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-title">Drag & Drop Evidence File Here</div>
+            <p class="dropzone-desc">or click to browse filesystem (.dd, .e01, .log, .pdf, .bin, .json)</p>
+            <input type="file" id="evidence-file-input" class="hidden-file-input">
+          </div>
+
+          <!-- Pre-loaded Forensic Evidence Samples -->
+          <div class="sample-bar">
+            <span>Sample Evidence:</span>
+            <button class="sample-btn" data-sample="sample-log">server_auth.log</button>
+            <button class="sample-btn" data-sample="sample-contract">procurement_contract.txt</button>
+            <button class="sample-btn" data-sample="sample-tampered-contract">contract_TAMPERED.txt</button>
+            <button class="sample-btn" data-sample="sample-c2">threat_c2.json</button>
+          </div>
+
+          <!-- Direct Raw Content Editor -->
+          <div style="margin-top: 1rem;">
+            <label style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.35rem;">
+              Or Direct Bit-Stream / Raw Evidence Text:
+            </label>
+            <textarea id="raw-evidence-text" class="data-textarea" placeholder="Type or paste evidence stream here to calculate live hashes..."></textarea>
+          </div>
+
+          <!-- Metadata Box -->
+          <div class="metadata-grid" id="evidence-meta-grid">
+            <div class="meta-item">
+              <span class="meta-k">Artifact Name</span>
+              <span class="meta-v" id="meta-filename">server_auth.log</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-k">Calculated Size</span>
+              <span class="meta-v" id="meta-filesize">435 Bytes</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-k">Shannon Entropy</span>
+              <span class="meta-v" id="meta-entropy">4.62 / 8.0</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-k">Hashing Latency</span>
+              <span class="meta-v" id="meta-latency">1.24 ms</span>
+            </div>
+          </div>
+
+          <!-- Dual Hash Standout Banner -->
+          <div class="dual-hash-banner">
+            <div class="dual-hash-info">
+              <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Dual-Hash Forensic Standard (MD5 + SHA-256)
+              </h4>
+              <p>Recommended by NIST and report guidelines to maintain legacy continuity while providing full collision immunity.</p>
+            </div>
+            <span class="status-pill pass">ACTIVE STANDARD</span>
+          </div>
+        </div>
+
+        <!-- Multi-Hash Results Column -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">
+                <span>🔐</span> Multi-Algorithm Cryptographic Fingerprints
+              </h2>
+              <p class="card-subtitle">Simultaneous computation across all major forensic hashing standards</p>
+            </div>
+            <button class="action-btn btn-primary" id="btn-export-manifest">
+              Export Manifest (.sha256)
+            </button>
+          </div>
+
+          <div class="hashes-list" id="hashes-display-list">
+            <!-- Hashes dynamically rendered -->
+          </div>
+
+          <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="action-btn" id="btn-send-to-avalanche">
+              <span>⚡</span> Send to Avalanche Lab
+            </button>
+            <button class="action-btn" id="btn-register-in-coc">
+              <span>⛓️</span> Register in Chain of Custody
+            </button>
+            <button class="action-btn" id="btn-quick-verify">
+              <span>🛡️</span> Verify in Audit Station
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: Avalanche Effect & Tamper Lab -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab-avalanche">
+      <div class="avalanche-header-banner">
+        <h3>Forensic Avalanche Effect & Tamper Detection Laboratory</h3>
+        <p>
+          "Altering even a single bit of the input produces a completely different digest, a property known as the avalanche effect. This makes a hash value an efficient stand-in for an entire evidence file when checking whether it has changed." (Report Page 3)
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Original Evidence Box -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <h3 class="card-title">
+              <span style="color: var(--accent-cyan)">●</span> Baseline / Master Evidence (Acquired State)
+            </h3>
+            <span class="status-pill pass">MASTER BASELINE</span>
+          </div>
+
+          <textarea id="avalanche-original-text" class="data-textarea" style="height: 140px;">CONFIDENTIAL FORENSIC INVESTIGATION REPORT - EVIDENCE ARTIFACT #9402
+STATUS: UNTAMPERED BIT-STREAM
+EXAMINER: Shourya Choure [CM23049]
+AMOUNT: INR 1,500,000 APPROVED FOR RELEASE</textarea>
+
+          <div class="hash-row" style="margin-top: 1rem;">
+            <div class="hash-row-header">
+              <span class="hash-algo-name">BASELINE SHA-256 DIGEST</span>
+              <span class="badge badge-gold">256-BIT</span>
+            </div>
+            <div class="hash-digest-box">
+              <span class="hash-digest-text" id="avalanche-orig-hash">Computing...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tampered / Modified Evidence Box -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <h3 class="card-title">
+              <span style="color: var(--accent-rose)">●</span> Working Evidence / Tamper Injection
+            </h3>
+            <span class="status-pill fail" id="tamper-status-pill">MODIFIED STATE</span>
+          </div>
+
+          <textarea id="avalanche-tampered-text" class="data-textarea" style="height: 140px; border-color: rgba(239, 68, 68, 0.4);">CONFIDENTIAL FORENSIC INVESTIGATION REPORT - EVIDENCE ARTIFACT #9402
+STATUS: UNTAMPERED BIT-STREAM
+EXAMINER: Shourya Choure [CM23049]
+AMOUNT: INR 2,500,000 APPROVED FOR RELEASE</textarea>
+
+          <div class="hash-row" style="margin-top: 1rem;">
+            <div class="hash-row-header">
+              <span class="hash-algo-name">CURRENT EVIDENCE SHA-256 DIGEST</span>
+              <span class="badge badge-forbidden" id="tamper-algo-badge">MISMATCH DETECTED</span>
+            </div>
+            <div class="hash-digest-box">
+              <span class="hash-digest-text" id="avalanche-tampered-hash">Computing...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Tamper Injection Action Bar -->
+      <div class="forensic-card" style="margin-top: 1.5rem;">
+        <div class="card-header-row">
+          <div>
+            <h3 class="card-title">⚡ Interactive Tamper Injection Controls</h3>
+            <p class="card-subtitle">Inject realistic forensic tampering or handling errors to observe the immediate avalanche diffusion</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ALGORITHM:</label>
+            <select id="avalanche-algo-select" class="form-select" style="width: 140px; padding: 0.35rem 0.6rem;">
+              <option value="SHA-256" selected>SHA-256 (NIST)</option>
+              <option value="SHA-512">SHA-512 (High)</option>
+              <option value="MD5">MD5 (Legacy)</option>
+              <option value="SHA-1">SHA-1 (Legacy)</option>
+              <option value="CRC32">CRC32 (Checksum)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tamper-actions-bar">
+          <button class="action-btn btn-danger" id="btn-tamper-flip-1bit">
+            <span>⚡</span> Flip 1 Single Bit (Bitwise XOR)
+          </button>
+          <button class="action-btn btn-danger" id="btn-tamper-modify-byte">
+            <span>🔀</span> Modify 1 Character
+          </button>
+          <button class="action-btn btn-danger" id="btn-tamper-space">
+            <span>␣</span> Append Trailing Space
+          </button>
+          <button class="action-btn btn-danger" id="btn-tamper-metadata">
+            <span>⏱️</span> Mount without Write-Blocker (Timestamp Touch)
+          </button>
+          <button class="action-btn btn-danger" id="btn-tamper-null">
+            <span>🚫</span> Inject Null Byte (\0)
+          </button>
+          <button class="action-btn" id="btn-tamper-reset" style="margin-left: auto;">
+            <span>🔄</span> Restore Identical Copies
+          </button>
+        </div>
+
+        <!-- Avalanche Metrics Grid -->
+        <div class="avalanche-metrics-grid">
+          <div class="metric-card">
+            <div class="metric-val" id="metric-total-bits">256</div>
+            <div class="metric-label">Total Digest Bits</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metric-flipped-bits" style="color: var(--accent-rose)">128</div>
+            <div class="metric-label">Flipped Bits (Hamming Distance)</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metric-avalanche-pct">50.0%</div>
+            <div class="metric-label">Avalanche Diffusion Rate</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metric-integrity-status" style="font-size: 1.15rem; color: #f87171;">TAMPERED</div>
+            <div class="metric-label">Integrity Status</div>
+          </div>
+        </div>
+
+        <div class="audit-alert-box" id="avalanche-alert-box">
+          <div id="avalanche-explanation">
+            Loading cryptographic diffusion evaluation...
+          </div>
+        </div>
+
+        <!-- Visual Bit Matrix Heatmap (256 bits) -->
+        <div class="bit-matrix-wrapper">
+          <div class="bit-matrix-header">
+            <div>
+              <strong>Visual Digest Bit Diffusion Matrix:</strong> Each square represents 1 bit in the cryptographic hash.
+            </div>
+            <div class="bit-legend">
+              <div class="legend-item">
+                <div class="legend-box legend-flipped"></div>
+                <span>Flipped Bit (Changed)</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-box legend-identical"></div>
+                <span>Unchanged Bit</span>
+              </div>
+            </div>
+          </div>
+          <div class="bit-grid" id="avalanche-bit-grid">
+            <!-- 256 cells dynamically rendered -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: Tamper-Evident Chain-of-Custody -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab-coc">
+      <div class="card-header-row" style="margin-bottom: 1.5rem;">
+        <div>
+          <h2 class="card-title" style="font-size: 1.35rem;">
+            <span>⛓️</span> Cryptographically Chained Digital Chain of Custody (CoC)
+          </h2>
+          <p class="card-subtitle">
+            Addresses Key Finding: <em>"A hash value is only as trustworthy as the record that stores it; an unsecured hash log can itself become a point of tampering."</em> (Report Page 7)
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="action-btn btn-primary" id="btn-add-coc-record">
+            <span>➕</span> Append Custody Event
+          </button>
+          <button class="action-btn" id="btn-verify-coc-chain">
+            <span>🔍</span> Audit Chain Integrity
+          </button>
+          <button class="action-btn btn-danger" id="btn-tamper-coc-simulate">
+            <span>⚠️</span> Simulate Ledger Tampering
+          </button>
+          <button class="action-btn" id="btn-reset-coc-chain">
+            <span>🔄</span> Restore Original Ledger
+          </button>
+        </div>
+      </div>
+
+      <!-- Chain Audit Status Banner -->
+      <div class="audit-alert-box pass" id="coc-audit-banner">
+        <div>
+          <strong id="coc-audit-title">✓ Blockchain-Grade Integrity Verified</strong>
+          <p id="coc-audit-msg" style="font-size: 0.85rem; margin-top: 0.2rem;">
+            All 4 chronological custody transfers mathematically validated. Sequential SHA-256 blocks confirm zero log falsification.
+          </p>
+        </div>
+        <span class="status-pill pass" id="coc-audit-pill">INTEGRITY SOUND</span>
+      </div>
+
+      <!-- Timeline of Custody Records -->
+      <div class="coc-timeline" id="coc-timeline-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: Evidence Verification Station -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab-verify">
+      <div class="grid-2">
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">
+                <span>🛡️</span> Forensic Verification Audit Station
+              </h2>
+              <p class="card-subtitle">Verify a working copy against a court-admitted baseline hash or manifest</p>
+            </div>
+            <span class="status-pill info">SECTION 65B READY</span>
+          </div>
+
+          <div class="form-group">
+            <label>1. Select Evidence Item / Load File to Audit:</label>
+            <div class="dropzone" id="verify-dropzone" style="padding: 1.5rem;">
+              <div class="dropzone-icon" style="font-size: 1.75rem;">📂</div>
+              <div class="dropzone-title" style="font-size: 0.9rem;">Upload File to Verify Against Baseline</div>
+              <input type="file" id="verify-file-input" class="hidden-file-input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>2. Or Paste Raw Content to Verify:</label>
+            <textarea id="verify-raw-content" class="data-textarea" style="height: 100px;" placeholder="Paste working copy text or hex here..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>3. Expected Baseline Hash (Provided by Seizing Officer / Manifest):</label>
+            <input type="text" id="verify-expected-hash" class="form-input font-mono" placeholder="Paste expected SHA-256, MD5, or SHA-1 hash...">
+          </div>
+
+          <div class="form-group">
+            <label>4. Algorithm Used in Baseline Record:</label>
+            <select id="verify-expected-algo" class="form-select">
+              <option value="SHA-256" selected>SHA-256 (NIST Gold Standard)</option>
+              <option value="MD5">MD5 (Legacy)</option>
+              <option value="SHA-1">SHA-1 (Legacy)</option>
+              <option value="SHA-512">SHA-512</option>
+              <option value="CRC32">CRC32 (Non-Crypto)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button class="action-btn btn-primary" id="btn-execute-verification" style="flex: 1; justify-content: center; padding: 0.75rem;">
+              <span>🔍</span> Execute Bit-Stream Verification Audit
+            </button>
+            <button class="action-btn" id="btn-load-sample-pass">
+              Load Valid Match
+            </button>
+            <button class="action-btn btn-danger" id="btn-load-sample-fail">
+              Load Tampered Sample
+            </button>
+          </div>
+        </div>
+
+        <!-- Verification Results Pane -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title">
+                <span>📋</span> Forensic Audit Verdict
+              </h2>
+              <p class="card-subtitle">Mathematical proof of unaltered bit-stream state</p>
+            </div>
+            <span class="status-pill pass" id="verdict-pill">AWAITING AUDIT</span>
+          </div>
+
+          <div id="verdict-banner" class="audit-alert-box pass" style="margin-bottom: 1.25rem;">
+            <div>
+              <strong id="verdict-title">Ready for Verification</strong>
+              <p id="verdict-msg" style="font-size: 0.85rem; margin-top: 0.25rem;">
+                Click "Execute Bit-Stream Verification Audit" to recompute hash and compare with baseline.
+              </p>
+            </div>
+          </div>
+
+          <table class="forensic-table">
+            <tbody>
+              <tr>
+                <th style="width: 35%;">Expected Baseline Hash:</th>
+                <td><code id="verdict-expected-val" class="font-mono text-cyan" style="word-break: break-all;">-</code></td>
+              </tr>
+              <tr>
+                <th>Computed Working Hash:</th>
+                <td><code id="verdict-computed-val" class="font-mono" style="word-break: break-all;">-</code></td>
+              </tr>
+              <tr>
+                <th>Bit-for-Bit Identity:</th>
+                <td id="verdict-match-status"><span class="status-pill info">PENDING</span></td>
+              </tr>
+              <tr>
+                <th>Hardware Write-Blocker:</th>
+                <td><span class="status-pill pass">ACTIVE (Compliant)</span></td>
+              </tr>
+              <tr>
+                <th>Court Admissibility:</th>
+                <td id="verdict-admissibility"><span class="status-pill info">PENDING AUDIT</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.35); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <h4 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.4rem;">Section 65B Statutory Significance:</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+              Under Indian Evidence Act / BSA 2023 and US Federal Rules of Evidence Rule 902(13)/(14), self-authenticating digital evidence requires a certified hash comparison showing no unauthorized alteration from the moment of acquisition to trial.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: Forensic Risk & Incident Analytics -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab-analytics">
+      <div class="card-header-row" style="margin-bottom: 1.5rem;">
+        <div>
+          <h2 class="card-title" style="font-size: 1.35rem;">
+            <span>📊</span> Forensic Risk & Incident Analytics (Interactive Report Models)
+          </h2>
+          <p class="card-subtitle">
+            Visualizations & comparative data modeled directly from the research report (Pages 5–8)
+          </p>
+        </div>
+      </div>
+
+      <!-- Charts Grid (Figure 2 & Figure 3 from Report) -->
+      <div class="grid-2">
+        <!-- Figure 2 -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <div>
+              <h3 class="card-title" style="font-size: 1rem;">
+                Figure 2: Illustrative Integrity-Failure Risk by Algorithm
+              </h3>
+              <p class="card-subtitle">Relative scale (1–10) based on collision vulnerability & bit security</p>
+            </div>
+          </div>
+          <div style="height: 280px; position: relative;">
+            <canvas id="chart-figure-2"></canvas>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center;">
+            Hover bars for vulnerability breakdown and cryptographic recommendations.
+          </p>
+        </div>
+
+        <!-- Figure 3 -->
+        <div class="forensic-card">
+          <div class="card-header-row">
+            <div>
+              <h3 class="card-title" style="font-size: 1rem;">
+                Figure 3: Distribution of Evidence-Integrity Incident Categories
+              </h3>
+              <p class="card-subtitle">Breakdown of primary root causes in compromised digital evidence</p>
+            </div>
+          </div>
+          <div style="height: 280px; position: relative;">
+            <canvas id="chart-figure-3"></canvas>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; text-align: center;">
+            Donut segments represent relative incidence rates from digital forensics literature review.
+          </p>
+        </div>
+      </div>
+
+      <!-- Table 1: Common Hashing Algorithms vs Recommended Practice -->
+      <div class="forensic-card" style="margin-top: 1.5rem;">
+        <div class="card-header-row">
+          <div>
+            <h3 class="card-title">Table 1: Hashing Algorithm vs Recommended Forensic Practice</h3>
+            <p class="card-subtitle">Mapped from Report Page 5 & 6</p>
+          </div>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="forensic-table" id="table-algorithms">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Bit Length</th>
+                <th>Typical Forensic Use</th>
+                <th>Recommended Practice</th>
+                <th>Integrity Risk</th>
+                <th>Forensic Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Table 2: Integrity & Security Risk Analysis -->
+      <div class="forensic-card" style="margin-top: 1.5rem;">
+        <div class="card-header-row">
+          <div>
+            <h3 class="card-title">Table 2: Key Integrity Risks & Mitigation in Evidence Handling</h3>
+            <p class="card-subtitle">Mapped from Report Page 6</p>
+          </div>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="forensic-table" id="table-risks">
+            <thead>
+              <tr>
+                <th>Risk Category</th>
+                <th>Forensic Description</th>
+                <th>Implemented Practical Mitigation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Observations & Recommendations Collapsibles -->
+      <div class="grid-2" style="margin-top: 1.5rem;">
+        <div class="forensic-card">
+          <h3 class="card-title" style="margin-bottom: 0.75rem; color: #38bdf8;">
+            <span>💡</span> Key Study Observations (Report Page 7)
+          </h3>
+          <ul id="list-observations" style="padding-left: 1.25rem; font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+            <!-- Populated via JS -->
+          </ul>
+        </div>
+
+        <div class="forensic-card">
+          <h3 class="card-title" style="margin-bottom: 0.75rem; color: #34d399;">
+            <span>🛡️</span> Actionable Forensic Recommendations (Report Pages 8–9)
+          </h3>
+          <ul id="list-recommendations" style="padding-left: 1.25rem; font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+            <!-- Populated via JS -->
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: Official Forensic Certificate (Sec 65B) -->
+    <!-- ========================================== -->
+    <section class="tab-pane" id="tab-certificate">
+      <div class="card-header-row no-print" style="margin-bottom: 1.5rem;">
+        <div>
+          <h2 class="card-title" style="font-size: 1.35rem;">
+            <span>📄</span> Section 65B & ISO/IEC 27037 Forensic Verification Certificate
+          </h2>
+          <p class="card-subtitle">Official evidentiary report generated for faculty review, court submission, or academic audit</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="action-btn btn-primary" id="btn-print-cert">
+            <span>🖨️</span> Print / Save as PDF
+          </button>
+          <button class="action-btn" id="btn-download-cert-json">
+            <span>💾</span> Export Certificate (JSON)
+          </button>
+        </div>
+      </div>
+
+      <!-- Certificate Container -->
+      <div id="certificate-output-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Append Custody Event Modal -->
+  <div class="modal-backdrop" id="modal-add-coc">
+    <div class="modal-card">
+      <div class="card-header-row">
+        <h3 class="card-title">Append New Chain-of-Custody Event</h3>
+        <button class="copy-btn" id="btn-close-coc-modal">✕</button>
+      </div>
+      <form id="form-add-coc">
+        <div class="form-group">
+          <label>Investigation Stage</label>
+          <select id="modal-coc-stage" class="form-select" required>
+            <option value="Initial Seizure & Acquisition">Initial Seizure & Acquisition</option>
+            <option value="Transfer to Evidence Locker">Transfer to Evidence Locker</option>
+            <option value="Forensic Lab Bit-Stream Imaging">Forensic Lab Bit-Stream Imaging</option>
+            <option value="Deep Artifact Extraction & Analysis">Deep Artifact Extraction & Analysis</option>
+            <option value="Courtroom Evidence Presentation">Courtroom Evidence Presentation</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Custodian / Examiner Name</label>
+          <input type="text" id="modal-coc-custodian" class="form-input" value="Shourya Choure [CM23049]" required>
+        </div>
+        <div class="form-group">
+          <label>Designated Facility / Storage</label>
+          <input type="text" id="modal-coc-location" class="form-input" value="SBJITMR Cyber Forensics Lab Workstation Alpha" required>
+        </div>
+        <div class="form-group">
+          <label>Hardware Write-Blocker Status</label>
+          <select id="modal-coc-wb" class="form-select">
+            <option value="true" selected>Active Hardware Write-Blocker (Write-Protect Engaged)</option>
+            <option value="false">Software / No Write-Blocker (Warning: Risk of Metadata Mutation)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes / Case Annotations</label>
+          <textarea id="modal-coc-notes" class="form-input" style="height: 60px;">Forensic dual-hash verified prior to physical custody handover.</textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="action-btn" id="btn-cancel-coc">Cancel</button>
+          <button type="submit" class="action-btn btn-primary">Sign & Cryptographically Chain Block</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JavaScript Application Bundle -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
